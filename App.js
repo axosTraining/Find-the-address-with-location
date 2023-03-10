@@ -17,7 +17,7 @@ export default function App() {
   const [places, setPlaces] = useState([]);
 
   const fetchRestaurants = (lat, lng) => {
-    fetch(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat}%2C${lng}&radius=500&type=restaurant&key=AIzaSyDsaFC1kMaY_1AWL_e2cdNsidfhlZZgDcg`)
+    fetch(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat}%2C${lng}&radius=500&type=restaurant&key=MY_KEY`)
       .then(response => response.json())
       .then(data => {
         setLocation(data);
