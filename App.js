@@ -1,6 +1,6 @@
 import * as Location from 'expo-location';
 import { useState } from 'react';
-import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 
 export default function App() {
@@ -14,10 +14,18 @@ export default function App() {
     longitudeDelta: 0.0221
   });
 
-  const [marker, setMarker] = useState({
-    latitude: 60.200692,
-    longitude: 24.934302
-  })
+  const [places, setPlaces] = useState([]);
+
+  const fetchRestaurants = (lat, lng) => {
+    fetch(`https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat}%2C${lng}&radius=500&type=restaurant&key=AIzaSyDsaFC1kMaY_1AWL_e2cdNsidfhlZZgDcg`)
+      .then(response => response.json())
+      .then(data => {
+        setLocation(data);
+        setPlaces(data.results);
+        console.log(data.results[0].geometry.location);
+      })
+      .catch(err => console.error(err));
+  }
 
   const fetchAddress = () => {
     fetch(`http://www.mapquestapi.com/geocoding/v1/address?key=sjICJIwWbLnpiETDTUcD6kcmNXjg90tJ&location=${address}`,
@@ -31,10 +39,7 @@ export default function App() {
           latitude: data.results[0].locations[0].latLng.lat,
           longitude: data.results[0].locations[0].latLng.lng
         });
-        setMarker({
-          latitude: data.results[0].locations[0].latLng.lat,
-          longitude: data.results[0].locations[0].latLng.lng
-        });
+        fetchRestaurants(data.results[0].locations[0].latLng.lat, data.results[0].locations[0].latLng.lng);
       })
       .catch(err => console.error(err));
   }
@@ -50,6 +55,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View>
+        <Text>{location && location.status}</Text>
         <TextInput
           style={styles.textfield}
           onChangeText={currValue => setAddress(currValue)}
@@ -64,11 +70,14 @@ export default function App() {
         style={{ width: '100%', height: '100%' }}
         region={region}
       >
-        <Marker
-          title='Haaga-Helia'
-          pinColor='yellow'
-          coordinate={marker}
-        />
+        {places.length > 0 && places.map((item, index) => (
+          <Marker
+            key={index}
+            title={item.name}
+            description={item.vicinity}
+            coordinate={{ latitude: item.geometry.location.lat, longitude: item.geometry.location.lng }}
+          />
+        ))}
       </MapView>
     </View>
   );
@@ -92,3 +101,4 @@ const styles = StyleSheet.create({
     borderWidth: 1
   }
 });
+
